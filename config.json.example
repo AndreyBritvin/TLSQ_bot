@@ -1,0 +1,6 @@
+{
+    "BOT_TOKEN":"<TOKEN_NAME>",
+    "LOG_FILE_NAME":"<file_path>",
+    "DB_FILE_PATH":"<db_file_path>"
+
+}
