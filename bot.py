@@ -32,8 +32,20 @@ class Bot:
             "Бегемот?": ["-бег-", "-бегем-", "-бегемот-"],
             "Ложка?":['-ложка-','-ложк-','-лож-'],
             "Телефон?":['-телефон-','-теле- и -фон-','-тел- и -фон-'],
-            "Дорожка?":['-дорожк-','-дорожка-','-дорож-']
-        }
+            "Дорожка?":['-дорожк-','-дорожка-','-дорож-'],
+
+
+            "Курица?":['-ку-','-куриц-','-кур-'],
+            "Попугай?":['-поп-','-пуг-','-попугай-'],
+            "Птицы?":['-пт-','-птицы-','-птиц-'],
+            "Делать?":['-делать-','-лат-','-дел-'],
+            "Расти?":['-рас-','-расти-','-раст-'],
+            "Идти?":['-идти-','-идт-','-ид-'],
+            "Пушистые?":['-пушистые-','-пушист-','-пуш-'],
+            "Раскрас?":['-раскрас-','-рас-','-крас-'],
+            "Кукуруза?":['-куку-','-куку- и -руз-','-кукуруз-'],
+            "Акула?":['-ак-','-акула-','-акул-'],
+            }
         self.math = {
             '20*20':   ['40', '4000', '400'],
             '7*13':    ['70', '121', '101'],
@@ -55,8 +67,8 @@ class Bot:
             'Васюткино озеро':['А.Пушкин','В.Жуковский','В.Астафьев']
         }
 
-
-
+        self.obj = None
+        self.question = None
     def get_question(self,obj):
         if obj == 'Русский язык':
             question = copy.deepcopy(self.russian)
@@ -97,35 +109,45 @@ class Bot:
     def object_handler(self, bot, update):
         mes = update.message.text
         if mes == 'Русский язык':
-            self.ask_question('Русский язык','Где правильно выделен корень у слова ',bot,update)
+            self.question = 'Где правильно выделен корень у слова '
+            self.obj = 'Русский язык'
+            self.ask_question(self.obj,self.question,bot,update)
+
 
         elif mes == 'Математика':
-            self.ask_question('Математика', 'Найди значение выражения ', bot, update)
-
+            self.question ='Найди значение выражения '
+            self.obj = 'Математика'
+            self.ask_question(self.obj, self.question, bot, update)
         elif mes == 'Литература':
-            self.ask_question('Литература', 'Кто написал ', bot, update)
-
+            self.question ='Кто написал '
+            self.obj = 'Литература'
+            self.ask_question(self.obj, self.question, bot, update)
         elif mes == 'История':
-            self.ask_question('История', 'Выбери правилльную столицу у ', bot, update)
-
+            self.question ='Выбери правилльную столицу у '
+            self.obj = 'История'
+            self.ask_question(self.obj, self.question, bot, update)
         if update.message.text == 'Вернуться назад':
-
+            self.obj = None
+            self.question = None
             bot.sendMessage(chat_id=update.message.chat_id, text="Возращаю", reply_markup = ReplyKeyboardMarkup(self.reply_keyboard, one_time_keyboard=True))
-            print(update.message)
 
         logging.debug(self.quest)
 
         if any(mes in s for s in self.quest[1]):
             logging.debug("ANSWER IN DICT")
             if str(mes) == self.quest[0]:
-                bot.sendMessage(chat_id=update.message.chat_id, text = 'Правильно', reply_markup = ReplyKeyboardMarkup(self.reply_keyboard, one_time_keyboard=True))
+                bot.sendMessage(chat_id=update.message.chat_id, text = 'Правильно')
+
+                self.ask_question(self.obj,self.question,bot,update)
             else:
-                bot.sendMessage(chat_id=update.message.chat_id, text='Неправильно, попробуй еще')
+                r.shuffle(self.quest[1])
+                bot.sendMessage(chat_id=update.message.chat_id, text='Неправильно, попробуй еще',reply_markup = ReplyKeyboardMarkup(self.answers, one_time_keyboard=False))
 
         else:
             bot.sendMessage(chat_id = update.message.chat_id, text = 'Выбирете ответ на кнопках, пожалуйста')
 
         logging.info('%s,%s,%s' % (t.asctime(), update.message.from_user.first_name, mes))
+
     def begin_work(self,start_handler,message_handler):
         self.updater.dispatcher.add_handler(start_handler)
         self.updater.dispatcher.add_handler(message_handler)
