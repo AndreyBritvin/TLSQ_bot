@@ -21,3 +21,43 @@
 пользователей, чтобы каждый пользователь видел, какой у него рейтинг среди остальных
 пользователей тем самым был более мотивирован продолжать закреплять знания и иметь более
 высокий рейтинг.
+
+
+Перед запуском бота нужно создать базу данных со следующими таблицами:
+СREATE TABLE Subj ( 
+	id                   integer   ,
+	subj_name            varchar   ,
+	CONSTRAINT pk_Subj UNIQUE ( id ) 
+ );
+
+CREATE TABLE Users ( 
+	id                   integer   ,
+	tg_userID            varchar    ,
+	tg_first_name        varchar    ,
+	tg_last_name         varchar    ,
+	CONSTRAINT pk_Users UNIQUE ( id ) ,
+	CONSTRAINT sqlite_autoindex_Users_1 UNIQUE ( tg_userID ) 
+ );
+
+CREATE TABLE sqlite_sequence ( 
+	name                 varchar    ,
+	seq                  varchar    
+ );
+
+CREATE TABLE Stat_answers ( 
+	id                   integer   ,
+	id_user              integer   ,
+	id_subj              integer   ,
+	count_correct        integer NOT NULL  ,
+	count_incorrect      integer NOT NULL  ,
+	time                 datetime NOT NULL  ,
+	CONSTRAINT pk_Stat_answers UNIQUE ( id ) ,
+	FOREIGN KEY ( id_subj ) REFERENCES Subj( id )  ,
+	FOREIGN KEY ( id_user ) REFERENCES Users( id )  
+ );
+
+
+Также нужно переименовать файл config.json.example а config.json и обновить свои данные для бота (токен, пути до файлов с логами и базами данных)
+
+
+
