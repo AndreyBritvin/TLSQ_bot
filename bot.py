@@ -13,7 +13,7 @@ import config
 
 class Bot:
     def __init__(self, token, filename, db_filename, log_level):
-        self.updater = Updater(token)
+        self.updater = Updater(token, request_kwargs={'proxy_url': 'socks5://5.189.165.75:1080/'})
         logging.basicConfig(level=log_level, format='[%(asctime)s] %(levelname)s  %(message)s',
                             filename=filename, filemode='w')
 
@@ -166,4 +166,4 @@ class Bot:
         ##self.updater.dispatcher.add_handler(top)
         self.updater.dispatcher.add_handler(help_handler)
 
-        self.updater.start_polling(poll_interval=2)
+        self.updater.start_polling(poll_interval=1, timeout=30)
