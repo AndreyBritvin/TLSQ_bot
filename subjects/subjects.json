@@ -1,0 +1,24 @@
+{
+  "data": [
+    {
+      "name": "История",
+      "question": "Выбери правилльную столицу у ",
+      "path": "subjects/hist.json"
+    },
+    {
+      "name": "Русский язык",
+      "path": "subjects/russ.json",
+      "question": "Где правильно выделен корень у слова "
+    },
+    {
+      "name": "Математика",
+      "path": "subjects/math.json",
+      "question": "Найди значение выражения "
+    },
+    {
+      "name": "Литература",
+      "path": "subjects/literature.json",
+      "question": "Кто написал произведение "
+    }
+  ]
+}
