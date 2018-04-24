@@ -9,75 +9,67 @@ import db
 import random as r
 import copy
 import config
+import Object
 
 
 class Bot:
-    def __init__(self, token, filename, db_filename, log_level):
-        self.updater = Updater(token, request_kwargs={'proxy_url': 'socks5://5.189.165.75:1080/'})
+    def __init__(self, token, filename, db_filename, log_level, proxy_url, obj_path):
+        if proxy_url:
+            self.updater = Updater(token, request_kwargs={'proxy_url': proxy_url})
+        else:
+            self.updater = Updater(token)
         logging.basicConfig(level=log_level, format='[%(asctime)s] %(levelname)s  %(message)s',
                             filename=filename, filemode='w')
+        conf = config.Read(obj_path)
 
-        self.reply_keyboard = [['Русский язык', 'Математика'], ['Литература', 'История'], ['Статистика']]
+        self.data = conf.getVars('data')
+
+        self.reply_keyboard = self.data_for_keyboard(self.data)
 
         self.db = db.DB()
         self.con = self.db.begin(db_filename)
         self.cur = self.con.cursor()
 
-        # self.db.create(self.cur,'CREATE TABLE Users (id INTEGER PRIMARY KEY, tg_userID VARCHAR(15), tg_first_name VARCHAR(20), tg_last_name VARCHAR(20))')
-        # self.con.commit()
+        self.objects = Object.get_objects(obj_path)
 
-        math_conf = config.Read('mathematic.json')
-        math = math_conf.getDict()
-
-        russ_conf = config.Read('russ.json')
-        russ = russ_conf.getDict()
-
-        hist_conf = config.Read('hist.json')
-        hist = hist_conf.getDict()
-
-        lit_conf = config.Read('literature.json')
-        lit = lit_conf.getDict()
-
-        self.russian = russ
-
-        self.math = math
-
-        self.history = hist
-
-        self.literature = lit
-
-        self.obj = None
         self.question = None
 
-    def get_question(self, obj):
-        if obj == 'Русский язык':
-            question = copy.deepcopy(self.russian)
-        if obj == 'Математика':
-            question = copy.deepcopy(self.math)
-        if obj == 'Литература':
-            question = copy.deepcopy(self.literature)
-        if obj == 'История':
-            question = copy.deepcopy(self.history)
+    def data_for_keyboard(self, data):
+        objects = []
+        obj_test = []
+        for i in range(0, len(data) + 1):
+            if len(obj_test) == 2:
+                objects.append(obj_test)
+                obj_test = []
+            if i == len(data) and len(obj_test) != 2 and len(data) % 2 != 0:
+                objects.append(data[i - 1])
+            try:
+                obj_test.append(data[i]["name"])
+            except:
+                pass
+        objects.append(['Статистика'])
+        return objects
 
-        keys = r.choice(list(question.keys()))
-        answers = question[keys]
-        true_answer = answers[len(answers) - 1]
-        r.shuffle(answers)
+    def load_subj_json(self, obj_name):
+        for i in range(len(self.data)):
 
-        return [true_answer, answers, keys]
+            if self.data[i]["name"] == obj_name:
+                path = self.data[i]["path"]
+                return config.Read(path).getDict()
 
-    def ask_question(self, obj, disc, bot, update):
+    def ask_question(self, bot, update):
 
-        self.quest = self.get_question(obj)
+        self.quest = Object.get_question(self.obj)
 
         self.answers = [self.quest[1]]
         self.answers.append(['Вернуться назад'])
-        bot.sendMessage(chat_id=update.message.chat_id, text=disc + self.quest[2],
-                        reply_markup=ReplyKeyboardMarkup(self.answers, one_time_keyboard=False))
+        bot.sendMessage(chat_id=update.message.chat_id, text=self.obj.question + self.quest[2],
+                        reply_markup=ReplyKeyboardMarkup(self.answers, one_time_keyboard=False, resize_keyboard=True))
 
     def start(self, bot, update):
         bot.sendMessage(chat_id=update.message.chat_id, text="Привет, что ты хочешь изучать?",
-                        reply_markup=ReplyKeyboardMarkup(self.reply_keyboard, one_time_keyboard=True))
+                        reply_markup=ReplyKeyboardMarkup(self.reply_keyboard, one_time_keyboard=True,
+                                                         resize_keyboard=True))
         self.db.insert_user(self.con, update)
 
     def stat(self, bot, update):
@@ -86,7 +78,7 @@ class Bot:
         print(mes)
         if mes == 'Статистика':
             bot.sendMessage(chat_id=update.message.chat_id, text='Сейчас покажу',
-                            reply_markup=ReplyKeyboardMarkup(self.top, one_time_keyboard=False))
+                            reply_markup=ReplyKeyboardMarkup(self.top, one_time_keyboard=False, resize_keyboard=True))
 
 
         elif mes == 'ТОП часа':
@@ -100,9 +92,9 @@ class Bot:
                             text='Общий рейтинг пользователей за день:\n\n' + ret)
 
         elif mes == 'ТОП за всё время':
-            ret=self.db.get_stat(self.con, update, 0)
+            ret = self.db.get_stat(self.con, update, 0)
             bot.sendMessage(chat_id=update.message.chat_id,
-                            text='Общий рейтинг пользователей за всё время:\n\n'+ret)
+                            text='Общий рейтинг пользователей за всё время:\n\n' + ret)
 
         # else:
         #   bot.sendMessage(chat_id=update.message.chat_id, text='Выбирете ответ на кнопках, пожалуйста')
@@ -118,28 +110,18 @@ class Bot:
     def object_handler(self, bot, update):
         mes = update.message.text
         self.stat(bot, update)
-        if mes == 'Русский язык':
-            self.question = 'Где правильно выделен корень у слова '
-            self.obj = 'Русский язык'
-            self.ask_question(self.obj, self.question, bot, update)
 
-        elif mes == 'Математика':
-            self.question = 'Найди значение выражения '
-            self.obj = 'Математика'
-            self.ask_question(self.obj, self.question, bot, update)
-        elif mes == 'Литература':
-            self.question = 'Кто написал произведение '
-            self.obj = 'Литература'
-            self.ask_question(self.obj, self.question, bot, update)
-        elif mes == 'История':
-            self.question = 'Выбери правилльную столицу у '
-            self.obj = 'История'
-            self.ask_question(self.obj, self.question, bot, update)
+        tmp_obj = Object.get_object(self.objects, mes)
+        if tmp_obj:
+            self.obj = tmp_obj
+            self.ask_question(bot, update)
+
+
         if update.message.text == 'Вернуться назад':
-            self.obj = None
             self.question = None
             bot.sendMessage(chat_id=update.message.chat_id, text="Возращаю",
-                            reply_markup=ReplyKeyboardMarkup(self.reply_keyboard, one_time_keyboard=True))
+                            reply_markup=ReplyKeyboardMarkup(self.reply_keyboard, one_time_keyboard=True,
+                                                             resize_keyboard=True))
         try:
             logging.debug(self.quest)
         except AttributeError:
@@ -149,13 +131,14 @@ class Bot:
             logging.debug("ANSWER IN DICT")
             if str(mes) == self.quest[0]:
                 bot.sendMessage(chat_id=update.message.chat_id, text='✅Правильно')
-                self.db.insert_answers(self.con, update, self.obj, 1, 0)
-                self.ask_question(self.obj, self.question, bot, update)
+                self.db.insert_answers(self.con, update, self.obj.name, 1, 0)
+                self.ask_question(bot, update)
             else:
-                self.db.insert_answers(self.con, update, self.obj, 0, 1)
+                self.db.insert_answers(self.con, update, self.obj.name, 0, 1)
                 r.shuffle(self.quest[1])
                 bot.sendMessage(chat_id=update.message.chat_id, text='❌Неправильно, попробуй еще',
-                                reply_markup=ReplyKeyboardMarkup(self.answers, one_time_keyboard=False))
+                                reply_markup=ReplyKeyboardMarkup(self.answers, one_time_keyboard=False,
+                                                                 resize_keyboard=True))
 
         logging.info('%s,%s' % (update.message.from_user.first_name, mes))
 
