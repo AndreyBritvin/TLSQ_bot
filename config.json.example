@@ -2,5 +2,7 @@
     "BOT_TOKEN":"<TOKEN_NAME>",
     "LOG_FILE_NAME":"<file_path>",
     "DB_FILE_PATH":"<db_file_path>"
-    "LOG_LEVEL":<log_level>
+    "LOG_LEVEL":<log_level>,
+    "PROXY":"<proxy>",
+    "OBJECT_PATH":"<object_path>"
 }
