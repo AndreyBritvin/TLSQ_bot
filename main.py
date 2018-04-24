@@ -12,7 +12,10 @@ def main():
     log_file = conf.getVars('LOG_FILE_NAME')
     db_file = conf.getVars('DB_FILE_PATH')
     log_level = conf.getVars('LOG_LEVEL')
-    tg_bot = bot.Bot(token, log_file,db_file,log_level)
+    proxy_url = conf.getVars('PROXY')
+    objects_path = conf.getVars('OBJECT_PATH')
+
+    tg_bot = bot.Bot(token, log_file, db_file, log_level, proxy_url, objects_path)
 
     start_handler = CommandHandler('start', tg_bot.start)
     message_handler = MessageHandler(Filters.text, tg_bot.object_handler)
