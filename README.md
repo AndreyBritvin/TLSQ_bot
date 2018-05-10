@@ -55,6 +55,15 @@ CREATE TABLE Stat_answers (
 	FOREIGN KEY ( id_subj ) REFERENCES Subj( id )  ,
 	FOREIGN KEY ( id_user ) REFERENCES Users( id )  
  );
+ 
+CREATE TABLE Questions ( 
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    id_user     CHAR    UNIQUE,
+    true_answer CHAR,
+    answers     CHAR,
+    object      CHAR,
+    counter     INTEGER DEFAULT ( 0 ) 
+);
 
 
 Также нужно переименовать файл config.json.example а config.json и обновить свои данные для бота (токен, пути до файлов с логами и базами данных)
