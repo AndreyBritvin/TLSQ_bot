@@ -36,7 +36,7 @@ def get_question(obj):
         obj.data = copy.deepcopy(config.Read(obj.path).getDict())
         obj.is_loaded = True
 
-    questions = obj.data
+    questions = copy.deepcopy(obj.data)
 
     keys = r.choice(list(questions.keys()))
     answers = questions[keys]
