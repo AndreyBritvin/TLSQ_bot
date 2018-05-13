@@ -71,8 +71,12 @@ class DB:
                 ret_str = ''
                 pos = 1
                 for i in ret_sort:
-                    ret_str += str(pos) + '. ' + i[0] + ' ' + i[1] + ':  ✅:' + str(i[2]) + ' ❌:' + str(
-                        i[3]) + ' 🏆:' + str(i[4]) + '\n'
+                    fn = i[0]
+                    ln = i[1]
+                    if ln == None:
+                        ln = ''
+                    ret_str += str(pos) + '. ' + fn + ' ' + ln + ':  ✅:' + str(i[2]) + ' ❌:' + str(i[3]) + ' 🏆:' + str(
+                        i[4]) + '\n'
                     pos += 1
         return ret_str
         # con.commit()
